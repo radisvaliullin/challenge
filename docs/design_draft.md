@@ -16,7 +16,106 @@ REST API should implement Add, Search, Fetch methods wrapping storage methods.
 * Add build/deployment instructions. Implement Makefile for build/deploy commands. Implement Dockerfile.
 
 ## Storage Format
+Storage Table Column:
+```
+Produce Code - case-insensitive alphanumeric, sixteen characters long,
+with dashes separating each four character group (example: A12T-4GH7-QPL9-3N4M).
 
+Name - name of produce, alphanumeric and case insensitive (example: Lettuce, Gala Apple).
+
+Unit price - price of produce, a number with up to 2 decimal places (example: $3.46).
+```
 
 ## API Format
+### Add Request
+```
+POST
+/storage/add
+{
+    "items": [
+        {
+            "code": "A12T-4GH7-QPL9-3N4M",
+            "name": "Lettuce",
+            "price": 3.46
+        },
+        {
+            "code": "1111-2222-3333-4444",
+            "name": "Pomegranate",
+            "price": 5.01
+        }
+    ]
+}
+```
+Add Response
+```
+{
+    "item_codes": ["A12T-4GH7-QPL9-3N4M", "1111-2222-3333-4444"],
+    "item_count": 2
+}
+```
 
+### Search Request
+```
+POST
+/storage/search
+{
+    "search": "Red Grapefruit"
+}
+```
+Search Response
+```
+{
+    items: [
+        {
+            "code": "A12T-4GH7-QPL9-3N4M",
+            "name": "Lettuce",
+            "price": 3.46
+        },
+        {
+            "code": "1111-2222-3333-4444",
+            "name": "Pomegranate",
+            "price": 5.01
+        }
+    ]
+}
+```
+
+### Fetch Request
+```
+GET
+/storage/{code}
+```
+Fetch Response
+```
+{
+    item: {
+        "code": "A12T-4GH7-QPL9-3N4M",
+        "name": "Lettuce",
+        "price": 3.46
+    }
+}
+```
+
+### Delete Request
+```
+DELETE
+/storage/delete
+{
+    "item_codes": ["A12T-4GH7-QPL9-3N4M", "1111-2222-3333-4444"]
+}
+```
+Delete Response
+```
+{
+    "item_count": 2
+}
+```
+
+### Error Response
+```
+{
+    "code": 500,
+    "error": "verbal name of error",
+    "message": "error details"
+}
+```
