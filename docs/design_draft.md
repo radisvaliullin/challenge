@@ -16,7 +16,7 @@ REST API should implement Add, Search, Fetch methods wrapping storage methods.
 * Add build/deployment instructions. Implement Makefile for build/deploy commands. Implement Dockerfile.
 
 ## Storage Format
-Storage Table Column:
+Store Table Column:
 ```
 Produce Code - case-insensitive alphanumeric, sixteen characters long,
 with dashes separating each four character group (example: A12T-4GH7-QPL9-3N4M).
@@ -30,7 +30,7 @@ Unit price - price of produce, a number with up to 2 decimal places (example: $3
 ### Add Request
 ```
 POST
-/storage/add
+/store/add
 {
     "items": [
         {
@@ -57,7 +57,7 @@ Add Response
 ### Search Request
 ```
 POST
-/storage/search
+/store/search
 {
     "search": "Red Grapefruit"
 }
@@ -83,7 +83,7 @@ Search Response
 ### Fetch Request
 ```
 GET
-/storage/{code}
+/store/{code}
 ```
 Fetch Response
 ```
@@ -99,7 +99,7 @@ Fetch Response
 ### Delete Request
 ```
 DELETE
-/storage/delete
+/store/delete
 {
     "item_codes": ["A12T-4GH7-QPL9-3N4M", "1111-2222-3333-4444"]
 }
