@@ -30,7 +30,7 @@ type SearchRes struct {
 }
 
 type FetchRes struct {
-	Item ItemRecord `json"item"`
+	Item ItemRecord `json:"item"`
 }
 
 type DeleteReq struct {
