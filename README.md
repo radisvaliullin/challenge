@@ -1,5 +1,8 @@
 # challenge
 Code challenge 
 
-# Design doc
+## Design doc
 [design draft](./docs/design_draft.md)
+
+## Build
+[see Makefiel](./Makefile)
