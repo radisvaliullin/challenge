@@ -12,7 +12,7 @@ func TestStorageFetchPositive(t *testing.T) {
 
 	// init storage
 	conf := Config{
-		Fixtures: getTestConfigFixtures(),
+		Fixtures: GetTestConfigFixtures(),
 	}
 	storage, err := New(conf)
 	if err != nil {
@@ -67,7 +67,7 @@ func TestStorageAddPositive(t *testing.T) {
 
 	// init storage
 	conf := Config{
-		Fixtures: getTestConfigFixtures(),
+		Fixtures: GetTestConfigFixtures(),
 	}
 	storage, err := New(conf)
 	if err != nil {
@@ -134,7 +134,7 @@ func TestStorageAddNegative(t *testing.T) {
 
 	// init storage
 	conf := Config{
-		Fixtures: getTestConfigFixtures(),
+		Fixtures: GetTestConfigFixtures(),
 	}
 	storage, err := New(conf)
 	if err != nil {
@@ -202,7 +202,7 @@ func TestStorageSearchPositive(t *testing.T) {
 
 	// init storage
 	conf := Config{
-		Fixtures: getTestConfigFixtures(),
+		Fixtures: GetTestConfigFixtures(),
 	}
 	storage, err := New(conf)
 	if err != nil {
@@ -248,7 +248,7 @@ func TestStorageDeletePositive(t *testing.T) {
 
 	// init storage
 	conf := Config{
-		Fixtures: getTestConfigFixtures(),
+		Fixtures: GetTestConfigFixtures(),
 	}
 	storage, err := New(conf)
 	if err != nil {
@@ -315,30 +315,5 @@ func TestIsAlphaNumeric(t *testing.T) {
 			}
 			t.Logf("is alphanumeric: ok: str - %v, res - %v, expRes - %v", tc.str, ok, tc.isAlphaNum)
 		})
-	}
-}
-
-func getTestConfigFixtures() []ItemRecord {
-	return []ItemRecord{
-		{
-			Code:  "A12T-4GH7-QPL9-3N4M",
-			Name:  "Lettuce",
-			Price: 3_46,
-		},
-		{
-			Code:  "E5T6-9UI3-TH15-QR88",
-			Name:  "Peach",
-			Price: 2_99,
-		},
-		{
-			Code:  "YRT6-72AS-K736-L4AR",
-			Name:  "Green Pepper",
-			Price: 79,
-		},
-		{
-			Code:  "TQ4C-VV6T-75ZX-1RMR",
-			Name:  "Gala Apple",
-			Price: 3_59,
-		},
 	}
 }
