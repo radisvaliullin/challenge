@@ -89,7 +89,39 @@ func (a *API) AddHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) SearchHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		writeErrorCode(http.StatusNotFound, w)
+		return
+	}
+	// parse path
+	tailPath := strings.TrimPrefix(r.URL.Path, PathStoreSearch)
+	if len(tailPath) > 0 {
+		writeErrorCode(http.StatusNotFound, w)
+		return
+	}
 
+	// decode payload
+	srchReq := SearchReq{}
+	if err := json.NewDecoder(r.Body).Decode(&srchReq); err != nil {
+		writeErrorCodeErr(http.StatusBadRequest, err, w)
+		return
+	}
+
+	// request storage
+	strgRes := a.storage.Search(storage.SearchReq{Search: srchReq.Search})
+
+	// build resp
+	res := SearchRes{}
+	for _, strgItem := range strgRes.Items {
+		item := ItemRecord{
+			Code:  strgItem.Code,
+			Name:  strgItem.Name,
+			Price: float64(strgItem.Price) / 100.0,
+		}
+		res.Items = append(res.Items, item)
+	}
+
+	writeResponse(res, w)
 }
 
 func (a *API) FetchHandler(w http.ResponseWriter, r *http.Request) {
@@ -117,7 +149,7 @@ func (a *API) FetchHandler(w http.ResponseWriter, r *http.Request) {
 		Item: ItemRecord{
 			Code:  strgRes.Item.Code,
 			Name:  strgRes.Item.Name,
-			Price: float64(strgRes.Item.Price) / 100,
+			Price: float64(strgRes.Item.Price) / 100.0,
 		},
 	}
 
@@ -126,7 +158,33 @@ func (a *API) FetchHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) DeleteHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "DELETE" {
+		writeErrorCode(http.StatusNotFound, w)
+		return
+	}
+	// parse path
+	tailPath := strings.TrimPrefix(r.URL.Path, PathStoreDelete)
+	if len(tailPath) > 0 {
+		writeErrorCode(http.StatusNotFound, w)
+		return
+	}
 
+	// decode payload
+	delReq := DeleteReq{}
+	if err := json.NewDecoder(r.Body).Decode(&delReq); err != nil {
+		writeErrorCodeErr(http.StatusBadRequest, err, w)
+		return
+	}
+
+	// request storage
+	strgRes := a.storage.Delete(storage.DeleteReq{ItemCodes: delReq.ItemCodes})
+
+	// build resp
+	res := DeleteRes{
+		ItemCount: strgRes.ItemCount,
+	}
+
+	writeResponse(res, w)
 }
 
 func writeErrorCode(code int, w http.ResponseWriter) {

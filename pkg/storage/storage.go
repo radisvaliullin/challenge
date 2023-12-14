@@ -86,7 +86,7 @@ func (s *Storage) Search(srchReq SearchReq) SearchRes {
 	// find items
 	for _, p := range phrases {
 		for _, item := range s.itemsTable {
-			if strings.Contains(item.Name, p) {
+			if strings.Contains(strings.ToLower(item.Name), strings.ToLower(p)) {
 				items = append(items, item)
 			}
 		}
