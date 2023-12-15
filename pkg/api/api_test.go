@@ -47,7 +47,7 @@ func TestAPIAddPositive(t *testing.T) {
 		t.Run(tn, func(t *testing.T) {
 
 			// make request
-			req := httptest.NewRequest("POST", PathStoreAdd, strings.NewReader(tc.AddReqRaw))
+			req := httptest.NewRequest("POST", "/store/add", strings.NewReader(tc.AddReqRaw))
 			w := httptest.NewRecorder()
 			apiOjb.AddHandler(w, req)
 

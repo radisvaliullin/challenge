@@ -83,7 +83,7 @@ Search Response
 ### Fetch Request
 ```
 GET
-/store/{code}
+/store/fetch/{code}
 ```
 Fetch Response
 ```

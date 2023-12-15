@@ -11,10 +11,7 @@ import (
 )
 
 const (
-	PathStoreAdd    = "/store/add"
-	PathStoreSearch = "/store/search"
-	PathStoreFetch  = "/store/"
-	PathStoreDelete = "/store/delete"
+	PathStoreFetch = "/store/fetch/"
 )
 
 type API struct {
@@ -31,10 +28,10 @@ func New(storage storage.IStorage) *API {
 func (a *API) Muxer() *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/ping", a.PingHandler)
-	mux.HandleFunc(PathStoreAdd, a.AddHandler)
-	mux.HandleFunc(PathStoreSearch, a.SearchHandler)
+	mux.HandleFunc("/store/add", a.AddHandler)
+	mux.HandleFunc("/store/search", a.SearchHandler)
 	mux.HandleFunc(PathStoreFetch, a.FetchHandler)
-	mux.HandleFunc(PathStoreDelete, a.DeleteHandler)
+	mux.HandleFunc("/store/delete", a.DeleteHandler)
 	return mux
 }
 
@@ -46,12 +43,6 @@ func (a *API) PingHandler(w http.ResponseWriter, r *http.Request) {
 
 func (a *API) AddHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
-		writeErrorCode(http.StatusNotFound, w)
-		return
-	}
-	// parse path
-	tailPath := strings.TrimPrefix(r.URL.Path, PathStoreAdd)
-	if len(tailPath) > 0 {
 		writeErrorCode(http.StatusNotFound, w)
 		return
 	}
@@ -90,12 +81,6 @@ func (a *API) AddHandler(w http.ResponseWriter, r *http.Request) {
 
 func (a *API) SearchHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
-		writeErrorCode(http.StatusNotFound, w)
-		return
-	}
-	// parse path
-	tailPath := strings.TrimPrefix(r.URL.Path, PathStoreSearch)
-	if len(tailPath) > 0 {
 		writeErrorCode(http.StatusNotFound, w)
 		return
 	}
@@ -159,12 +144,6 @@ func (a *API) FetchHandler(w http.ResponseWriter, r *http.Request) {
 
 func (a *API) DeleteHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "DELETE" {
-		writeErrorCode(http.StatusNotFound, w)
-		return
-	}
-	// parse path
-	tailPath := strings.TrimPrefix(r.URL.Path, PathStoreDelete)
-	if len(tailPath) > 0 {
 		writeErrorCode(http.StatusNotFound, w)
 		return
 	}
