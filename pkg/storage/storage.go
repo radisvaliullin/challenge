@@ -27,8 +27,11 @@ type Storage struct {
 	// In general case we can have list of tables (or something like that)
 	// Tables number usually do not have huge number so there is no scalability issue with that
 	// Table records opposite it can infinitely grow until allowed by memory size (see Table struct details).
-	itbMux    sync.Mutex
+	itbMux sync.Mutex
+	// TODO: need reimplement following new approach
 	itemTable []ItemRecord
+	// TODO: new approach
+	// itemTable table
 }
 
 func New(conf Config) (*Storage, error) {
