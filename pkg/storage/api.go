@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"slices"
 	"strings"
 )
 
@@ -23,17 +22,33 @@ func (s *Storage) Add(addReq AddReq) (AddRes, error) {
 
 	// check dublicates
 	for _, newItem := range addReq.Items {
-		for _, item := range s.itemTable {
-			if newItem.Code == item.Code {
-				return AddRes{}, ErrStorageAddReqCodeDuplDB
+		for _, page := range s.itemTable.pages {
+			for _, item := range page.recs {
+				// skip deleted item
+				if item.isDeleted {
+					continue
+				}
+				// check code matching
+				if newItem.Code == item.Code {
+					return AddRes{}, ErrStorageAddReqCodeDuplDB
+				}
 			}
 		}
 	}
 
-	// set items to DB
+	// set items to DB (add to latest page or add to new page)
 	codes := []string{}
 	for _, item := range addReq.Items {
-		s.itemTable = append(s.itemTable, item)
+		// check latest page records capacity (we have at least one page)
+		lastPage := s.itemTable.pages[len(s.itemTable.pages)-1]
+		if len(lastPage.recs) >= DefaultTableRecordsCapacity {
+			newPage := &tbPage{
+				recs: make([]ItemRecord, 0, DefaultTableRecordsCapacity),
+			}
+			s.itemTable.pages = append(s.itemTable.pages, newPage)
+			lastPage = newPage
+		}
+		lastPage.recs = append(lastPage.recs, item)
 		codes = append(codes, item.Code)
 	}
 	res := AddRes{
@@ -53,9 +68,16 @@ func (s *Storage) Search(srchReq SearchReq) SearchRes {
 
 	// find items
 	for _, p := range phrases {
-		for _, item := range s.itemTable {
-			if strings.Contains(strings.ToLower(item.Name), strings.ToLower(p)) {
-				items = append(items, item)
+		for _, page := range s.itemTable.pages {
+			for _, item := range page.recs {
+				// skip deleted item
+				if item.isDeleted {
+					continue
+				}
+				// compare
+				if strings.Contains(strings.ToLower(item.Name), strings.ToLower(p)) {
+					items = append(items, item)
+				}
 			}
 		}
 	}
@@ -84,11 +106,18 @@ func (s *Storage) Fetch(fReq FetchReq) (FetchRes, error) {
 	defer s.itbMux.Unlock()
 
 	isFind := false
-	for _, item := range s.itemTable {
-		if item.Code == fReq.Code {
-			res.Item = item
-			isFind = true
-			break
+	for _, page := range s.itemTable.pages {
+		for _, item := range page.recs {
+			// skip deleted item
+			if item.isDeleted {
+				continue
+			}
+			// compare
+			if item.Code == fReq.Code {
+				res.Item = item
+				isFind = true
+				break
+			}
 		}
 	}
 	if isFind {
@@ -104,11 +133,18 @@ func (s *Storage) Delete(delReq DeleteReq) DeleteRes {
 	defer s.itbMux.Unlock()
 
 	for _, dCode := range delReq.ItemCodes {
-		lastIdx := len(s.itemTable) - 1
-		for i := lastIdx; i >= 0; i-- {
-			if s.itemTable[i].Code == dCode {
-				s.itemTable = slices.Delete(s.itemTable, i, i+1)
-				res.ItemCount++
+		for _, page := range s.itemTable.pages {
+			for idx, item := range page.recs {
+				// skip deleted item
+				if item.isDeleted {
+					continue
+				}
+				// compare
+				if item.Code == dCode {
+					// set as deleted
+					page.recs[idx].isDeleted = true
+					res.ItemCount++
+				}
 			}
 		}
 	}

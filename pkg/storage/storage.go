@@ -5,8 +5,6 @@ import (
 )
 
 const (
-	DefaultItemTableCapacity = 1000_000
-
 	// 16 alphnumeric characters + 3 dashes
 	FullLenghtOfCode = 16 + 3
 	// Code contains 4 alphanumeric parts devided by dash
@@ -27,18 +25,21 @@ type Storage struct {
 	// In general case we can have list of tables (or something like that)
 	// Tables number usually do not have huge number so there is no scalability issue with that
 	// Table records opposite it can infinitely grow until allowed by memory size (see Table struct details).
-	itbMux sync.Mutex
-	// TODO: need reimplement following new approach
-	itemTable []ItemRecord
-	// TODO: new approach
-	// itemTable table
+	itbMux    sync.Mutex
+	itemTable *table
 }
 
 func New(conf Config) (*Storage, error) {
 	s := &Storage{
 		config:    conf,
-		itemTable: make([]ItemRecord, 0, DefaultItemTableCapacity),
+		itemTable: &table{},
 	}
+	// init table
+	s.itemTable.pages = make([]*tbPage, 0, DefaultTablePagesCapacity)
+	page0 := &tbPage{
+		recs: make([]ItemRecord, 0, DefaultTableRecordsCapacity),
+	}
+	s.itemTable.pages = append(s.itemTable.pages, page0)
 
 	if err := s.applyFixtures(); err != nil {
 		return nil, err

@@ -2,6 +2,11 @@ package storage
 
 import "fmt"
 
+const (
+	DefaultTablePagesCapacity   = 1024
+	DefaultTableRecordsCapacity = 1024
+)
+
 var (
 	ErrStorageCodePartNotAlphaNum = StorageError{Message: "code, one of part not alphanumeric"}
 	ErrStorageNamePartNotAlphaNum = StorageError{Message: "name, one of part not alphanumeric"}
@@ -30,10 +35,12 @@ var (
 // Table has pages, pages stores records.
 // Instead deleting record we mark it as deleted. It will delete later with clean process.
 type table struct {
-	pages []tbPage
+	pages []*tbPage
 }
 
 type tbPage struct {
+	// size of records can not exceed max size (default value)
+	// if need add more item should be created new page
 	recs []ItemRecord
 }
 
@@ -42,6 +49,9 @@ type ItemRecord struct {
 	Name string
 	// Store $1000.99 as 100099
 	Price int
+
+	// flags
+	isDeleted bool
 }
 
 // AddReq
