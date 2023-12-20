@@ -20,37 +20,22 @@ func (s *Storage) Add(addReq AddReq) (AddRes, error) {
 	s.itbMux.Lock()
 	defer s.itbMux.Unlock()
 
-	// check dublicates
+	// check duplicates
 	for _, newItem := range addReq.Items {
-		for _, page := range s.itemTable.pages {
-			for _, item := range page.recs {
-				// skip deleted item
-				if item.isDeleted {
-					continue
-				}
-				// check code matching
-				if newItem.Code == item.Code {
-					return AddRes{}, ErrStorageAddReqCodeDuplDB
-				}
-			}
+		if _, ok := s.getRecByCode(newItem.Code); ok {
+			// if ok we have duplicate
+			return AddRes{}, ErrStorageAddReqCodeDuplDB
 		}
 	}
 
 	// set items to DB (add to latest page or add to new page)
 	codes := []string{}
 	for _, item := range addReq.Items {
-		// check latest page records capacity (we have at least one page)
-		lastPage := s.itemTable.pages[len(s.itemTable.pages)-1]
-		if len(lastPage.recs) >= DefaultTableRecordsCapacity {
-			newPage := &tbPage{
-				recs: make([]ItemRecord, 0, DefaultTableRecordsCapacity),
-			}
-			s.itemTable.pages = append(s.itemTable.pages, newPage)
-			lastPage = newPage
-		}
-		lastPage.recs = append(lastPage.recs, item)
+		s.setRec(item)
 		codes = append(codes, item.Code)
 	}
+
+	// response
 	res := AddRes{
 		ItemCodes: codes,
 		ItemCount: len(codes),
@@ -59,7 +44,7 @@ func (s *Storage) Add(addReq AddReq) (AddRes, error) {
 }
 
 func (s *Storage) Search(srchReq SearchReq) SearchRes {
-	phrases := strings.Fields(srchReq.Search)
+	parts := strings.Fields(strings.ToLower(srchReq.Search))
 	res := SearchRes{}
 	items := []ItemRecord{}
 
@@ -67,19 +52,13 @@ func (s *Storage) Search(srchReq SearchReq) SearchRes {
 	defer s.itbMux.Unlock()
 
 	// find items
-	for _, p := range phrases {
-		for _, page := range s.itemTable.pages {
-			for _, item := range page.recs {
-				// skip deleted item
-				if item.isDeleted {
-					continue
-				}
-				// compare
-				if strings.Contains(strings.ToLower(item.Name), strings.ToLower(p)) {
-					items = append(items, item)
-				}
-			}
+	for _, p := range parts {
+
+		if recs := s.getRecByNamePref(p); len(recs) > 0 {
+			items = append(items, recs...)
 		}
+		// optionally we can use contains search but it not supports by index
+		// and will require full search
 	}
 
 	// clean duplicates
@@ -105,22 +84,8 @@ func (s *Storage) Fetch(fReq FetchReq) (FetchRes, error) {
 	s.itbMux.Lock()
 	defer s.itbMux.Unlock()
 
-	isFind := false
-	for _, page := range s.itemTable.pages {
-		for _, item := range page.recs {
-			// skip deleted item
-			if item.isDeleted {
-				continue
-			}
-			// compare
-			if item.Code == fReq.Code {
-				res.Item = item
-				isFind = true
-				break
-			}
-		}
-	}
-	if isFind {
+	if rec, ok := s.getRecByCode(strings.ToUpper(fReq.Code)); ok {
+		res.Item = rec
 		return res, nil
 	}
 	return res, ErrStorageItemNotFound
@@ -133,19 +98,9 @@ func (s *Storage) Delete(delReq DeleteReq) DeleteRes {
 	defer s.itbMux.Unlock()
 
 	for _, dCode := range delReq.ItemCodes {
-		for _, page := range s.itemTable.pages {
-			for idx, item := range page.recs {
-				// skip deleted item
-				if item.isDeleted {
-					continue
-				}
-				// compare
-				if item.Code == dCode {
-					// set as deleted
-					page.recs[idx].isDeleted = true
-					res.ItemCount++
-				}
-			}
+		dCode = strings.ToUpper(dCode)
+		if ok := s.delRecByCode(dCode); ok {
+			res.ItemCount++
 		}
 	}
 

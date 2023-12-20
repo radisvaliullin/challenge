@@ -5,6 +5,8 @@ import "fmt"
 const (
 	DefaultTablePagesCapacity   = 1024
 	DefaultTableRecordsCapacity = 1024
+
+	DefaultIndexCapacity = 1024
 )
 
 var (
@@ -42,6 +44,19 @@ type tbPage struct {
 	// size of records can not exceed max size (default value)
 	// if need add more item should be created new page
 	recs []ItemRecord
+}
+
+// simple index based on build-in map type
+// real index can be b-tree
+// index key - column value
+// index val - position of record
+// for name field one key can have multiple records
+type index map[string][]rid
+
+// record ID
+type rid struct {
+	page int
+	rec  int
 }
 
 type ItemRecord struct {

@@ -215,7 +215,7 @@ func TestStorageSearchPositive(t *testing.T) {
 		ExpResp SearchRes
 	}{
 		{
-			Search: "Pepp Pepp",
+			Search: "pepp pepp",
 			ExpResp: SearchRes{Items: []ItemRecord{
 				{
 					Code:  "YRT6-72AS-K736-L4AR",
