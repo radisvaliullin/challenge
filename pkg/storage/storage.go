@@ -116,6 +116,10 @@ func (s *Storage) setIndex(rec ItemRecord, pageIdx, recIdx int) {
 	for _, part := range lNameParts {
 		for i := 0; i < len(part); i++ {
 			p := part[:len(part)-i]
+			// min index two char
+			if len(p) < 2 {
+				continue
+			}
 			s.itbNameIndex[p] = append(s.itbNameIndex[p], id)
 		}
 	}
@@ -123,6 +127,9 @@ func (s *Storage) setIndex(rec ItemRecord, pageIdx, recIdx int) {
 
 // low level not thread-safe
 func (s *Storage) getRecByNamePref(namePref string) []ItemRecord {
+	if len(namePref) < 2 {
+		return nil
+	}
 	recs := []ItemRecord{}
 	if lrid, ok := s.itbNameIndex[namePref]; ok {
 		for _, id := range lrid {
