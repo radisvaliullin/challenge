@@ -18,12 +18,12 @@ func (s *Storage) Add(addReq AddReq) (AddRes, error) {
 		return AddRes{}, err
 	}
 
-	s.itemsMux.Lock()
-	defer s.itemsMux.Unlock()
+	s.itbMux.Lock()
+	defer s.itbMux.Unlock()
 
 	// check dublicates
 	for _, newItem := range addReq.Items {
-		for _, item := range s.itemsTable {
+		for _, item := range s.itemTable {
 			if newItem.Code == item.Code {
 				return AddRes{}, ErrStorageAddReqCodeDuplDB
 			}
@@ -33,7 +33,7 @@ func (s *Storage) Add(addReq AddReq) (AddRes, error) {
 	// set items to DB
 	codes := []string{}
 	for _, item := range addReq.Items {
-		s.itemsTable = append(s.itemsTable, item)
+		s.itemTable = append(s.itemTable, item)
 		codes = append(codes, item.Code)
 	}
 	res := AddRes{
@@ -48,12 +48,12 @@ func (s *Storage) Search(srchReq SearchReq) SearchRes {
 	res := SearchRes{}
 	items := []ItemRecord{}
 
-	s.itemsMux.Lock()
-	defer s.itemsMux.Unlock()
+	s.itbMux.Lock()
+	defer s.itbMux.Unlock()
 
 	// find items
 	for _, p := range phrases {
-		for _, item := range s.itemsTable {
+		for _, item := range s.itemTable {
 			if strings.Contains(strings.ToLower(item.Name), strings.ToLower(p)) {
 				items = append(items, item)
 			}
@@ -80,11 +80,11 @@ func (s *Storage) Search(srchReq SearchReq) SearchRes {
 func (s *Storage) Fetch(fReq FetchReq) (FetchRes, error) {
 	res := FetchRes{}
 
-	s.itemsMux.Lock()
-	defer s.itemsMux.Unlock()
+	s.itbMux.Lock()
+	defer s.itbMux.Unlock()
 
 	isFind := false
-	for _, item := range s.itemsTable {
+	for _, item := range s.itemTable {
 		if item.Code == fReq.Code {
 			res.Item = item
 			isFind = true
@@ -100,14 +100,14 @@ func (s *Storage) Fetch(fReq FetchReq) (FetchRes, error) {
 func (s *Storage) Delete(delReq DeleteReq) DeleteRes {
 	res := DeleteRes{}
 
-	s.itemsMux.Lock()
-	defer s.itemsMux.Unlock()
+	s.itbMux.Lock()
+	defer s.itbMux.Unlock()
 
 	for _, dCode := range delReq.ItemCodes {
-		lastIdx := len(s.itemsTable) - 1
+		lastIdx := len(s.itemTable) - 1
 		for i := lastIdx; i >= 0; i-- {
-			if s.itemsTable[i].Code == dCode {
-				s.itemsTable = slices.Delete(s.itemsTable, i, i+1)
+			if s.itemTable[i].Code == dCode {
+				s.itemTable = slices.Delete(s.itemTable, i, i+1)
 				res.ItemCount++
 			}
 		}

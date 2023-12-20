@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	DefaultItemsTableCapacity = 1000_000
+	DefaultItemTableCapacity = 1000_000
 
 	// 16 alphnumeric characters + 3 dashes
 	FullLenghtOfCode = 16 + 3
@@ -22,15 +22,19 @@ type Config struct {
 type Storage struct {
 	config Config
 
-	// Items Table mutex
-	itemsMux   sync.Mutex
-	itemsTable []ItemRecord
+	// Storage's single table and table mutex
+	// In our case we have only one table (Item Table)
+	// In general case we can have list of tables (or something like that)
+	// Tables number usually do not have huge number so there is no scalability issue with that
+	// Table records opposite it can infinitely grow until allowed by memory size (see Table struct details).
+	itbMux    sync.Mutex
+	itemTable []ItemRecord
 }
 
 func New(conf Config) (*Storage, error) {
 	s := &Storage{
-		config:     conf,
-		itemsTable: make([]ItemRecord, 0, DefaultItemsTableCapacity),
+		config:    conf,
+		itemTable: make([]ItemRecord, 0, DefaultItemTableCapacity),
 	}
 
 	if err := s.applyFixtures(); err != nil {
